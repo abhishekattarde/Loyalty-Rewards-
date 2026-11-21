@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
       appUrl,
     })
 
-    return new NextResponse(pdfBytes, {
+    return new NextResponse(Buffer.from(pdfBytes) as unknown as BodyInit, {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
