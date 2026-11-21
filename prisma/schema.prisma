@@ -1,0 +1,88 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String             @id @default(cuid())
+  email         String             @unique
+  name          String?
+  image         String?
+  role          Role               @default(CUSTOMER)
+  pointsBalance Int                @default(0)
+  createdAt     DateTime           @default(now())
+  transactions  PointTransaction[]
+  claimedCodes  QrCode[]
+
+  @@map("users")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+model Product {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  pricePoints Int
+  imageUrl    String?
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  batches     QrBatch[]
+
+  @@map("products")
+}
+
+model QrBatch {
+  id            String   @id @default(cuid())
+  productId     String
+  product       Product  @relation(fields: [productId], references: [id])
+  pointsPerCode Int
+  totalCodes    Int
+  greetingMsg   String   @default("Thanks for your purchase. Earn these points for further shopping.")
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  codes         QrCode[]
+
+  @@map("qr_batches")
+}
+
+model QrCode {
+  id           String             @id @default(cuid())
+  batchId      String
+  batch        QrBatch            @relation(fields: [batchId], references: [id])
+  uniqueCode   String             @unique
+  isUsed       Boolean            @default(false)
+  usedById     String?
+  usedBy       User?              @relation(fields: [usedById], references: [id])
+  usedAt       DateTime?
+  createdAt    DateTime           @default(now())
+  transactions PointTransaction[]
+
+  @@map("qr_codes")
+}
+
+model PointTransaction {
+  id        String          @id @default(cuid())
+  userId    String
+  user      User            @relation(fields: [userId], references: [id])
+  qrCodeId  String?
+  qrCode    QrCode?         @relation(fields: [qrCodeId], references: [id])
+  points    Int
+  type      TransactionType
+  note      String?
+  createdAt DateTime        @default(now())
+
+  @@map("point_transactions")
+}
+
+enum TransactionType {
+  EARNED
+  REDEEMED
+}
