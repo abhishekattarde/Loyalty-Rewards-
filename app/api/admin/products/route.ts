@@ -6,7 +6,7 @@ import { Role } from '@prisma/client'
 
 async function requireAdmin(req: NextRequest) {
   const session = await getServerSession(authOptions)
-  if (!session?.user || session.user.role !== Role.ADMIN) {
+  if (!session?.user || (session.user as any).role !== Role.ADMIN) {
     return null
   }
   return session

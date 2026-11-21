@@ -7,7 +7,7 @@ import { Role } from '@prisma/client'
 export async function GET(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user || session.user.role !== Role.ADMIN) {
+    if (!session?.user || (session.user as any).role !== Role.ADMIN) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
